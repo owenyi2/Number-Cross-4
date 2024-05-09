@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 from PIL import Image
 
-X_OFFSET = 420
-X_SPACING = 70
+X_OFFSET = 423
+X_SPACING = 69
 
-Y_OFFSET = 70
+Y_OFFSET = 74
 Y_SPACING = 70
 
 def pad(s, i):
@@ -35,12 +35,19 @@ def plot_grid(grid, img):
     plt.show()
 
 img = Image.open('Untitled.png')
+print((11122233444) + (13332 + 3444) + (1331 + 734449) + (133 + 100411) + (13 + 144 + 4181) + (1444 + 444889) + (74444 + 74888) + (7714177 + 989) + (77111779999) + (1144 + 79992) + (444443 + 3992))
 
-def workspace_1():
-    fib_row = 4
-    grid[fib_row] = [*pad("17711", 1)]
-     
+grid[0] = [*"11122233444"]
+grid[1] = [*"13332*3444*"] 
+grid[2] = [*"1331*734449"] 
+grid[3] = [*"133*100411*"] 
+grid[4] = [*"13*144*4181"] 
+grid[5] = [*"1444*444889"] 
+grid[6] = [*"74444*74888"] 
+grid[7] = [*"7714177*989"] 
+grid[8] = [*"77111779999"] 
+grid[9] = [*"*1144*79992"] 
+grid[10] = [*"444443*3992"] 
+plot_grid(grid, img)
 
-    plot_grid(grid, img)
 
-workspace_1()
