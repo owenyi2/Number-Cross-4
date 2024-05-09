@@ -188,7 +188,8 @@ fn main() {
     }
     for i in 0..11 {
         println!("{i}");
-        if let Some(solns) = solutions.get(&i) {
+        if let Some(solns) = solutions.get_mut(&i) {
+            solns.sort();
             for soln in solns { 
                 println!("{:?}", soln);
             }

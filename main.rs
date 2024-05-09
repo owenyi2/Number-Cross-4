@@ -3,7 +3,7 @@ use std::io::Write;
 
 struct Rec {
     strings: Vec<String>,
-    templates: [&'static str; 9],
+    templates: [&'static str; 10],
     delimiter: &'static str,
     string_length: i32,
 }
@@ -20,6 +20,7 @@ impl Rec {
                 "______",
                 "_______",
                 "________",
+                "_________",
                 "__________",
                 "___________",
             ],
