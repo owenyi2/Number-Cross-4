@@ -1,8 +1,6 @@
 use std::fs;
-use std::str::FromStr;
 use std::convert::TryInto;
 use std::collections::{HashSet, HashMap};
-use std::iter::FromIterator;
 
 const PUZZLE_SIZE: usize = 11;
 
@@ -89,6 +87,7 @@ impl<'ca> Solver<'ca> {
         } 
     }
     fn rec_solve(&mut self, constraint_index: usize, prev: char) {
+        // dbg!(&self.solution);
         if self.solution.len() == PUZZLE_SIZE {
             if !self.apply_check() {
                 return
@@ -141,19 +140,33 @@ impl<'ca> Solver<'ca> {
 
 fn main() {
     let region_constraints: Vec<(&str, fn(i64) -> bool)> = vec![
-        ("SSSDSSDSDSS", check_square),
-        ("SDSSDSDDSSD", one_more_than_palindrome),
-        ("SDSDSSDDSSD", prime_power_prime),
-        ("SDSDSDSDDSS", digit_sum_is_7),
-        
-    ];
+        ("SSSDSSDSDSS", square), // fast
+        ("SDSSDSDDSSD", |num| palindrome(num - 1)), // fast-ish
+        ("SDSDSSDDSSD", prime_power_prime), // fast
+        ("SDSDSDSDDSS", digit_sum_is_7), // fast-ish
+        ("SDDSDSDDDDD", fibonacci), // slow
+        ("SDSSSSSSDSD", square), // fast
+        ("SDSSSDSDDSS", multiple!(37)), // fast
+        ("SSDDDDSDSDD", |num| (multiple!(23))(num) && palindrome(num)), // slow
+        ("SSDSSDSDSSS", digit_product_is_1), // fast
+        ("SDSDSSDDSSD", multiple!(88)), // fast
+        ("SSSSSDSSDSD", |num| palindrome(num + 1)), // fast
+    ]; 
+    // I think the slow ones are because of all the DDDDD. It's not because of the checking algorithms. In fact the checking algorithms are rarely run. If we want to speed these up, we need to check more often in fact. By eliminating deadend pathways earlier.
+
+    // To do this, we want a function that takes a "proto-number" i.e. a sequence of digits and returns a boolean based on if there are any numbers satisfying clue constraint that start with this particular sequence of digits
+    // This would be a nice to have but right now slow means just wait 20 minutes and it's only slow for 2 of them. So we might as well just wait since we only need this computation once
+
+    // nvm rustc -O makes it go so fast
+
     let contents = fs::read_to_string("templates.txt").unwrap();
 
     let mut solutions: HashMap<usize, Vec<String>> = HashMap::new();
 
     for (idx, (region, check)) in region_constraints.into_iter().enumerate() {
         let region_constraint = region_to_constraint(&region).unwrap();
-        for template in contents.lines() {
+        dbg!(&region_constraint);
+        for (jdx, template) in contents.lines().enumerate() {
             let template_constraint = template_to_constraint(&template).unwrap();
             let constraint = lex_constraints(&region_constraint, &template_constraint);
 
@@ -163,13 +176,27 @@ fn main() {
                 .entry(idx)
                 .and_modify(|solns| solns.extend_from_slice(&solver.solutions))
                 .or_insert(solver.solutions);
+            // for c in &template_constraint { print!("{:?}, ", c) }
+            // println!();
+
+            // for c in &constraint { print!("{:?}, ", c) }
+            // println!(); 
+            dbg!(jdx);
+
         }
         dbg!(idx);
-    } 
-    dbg!(&solutions);
+    }
+    for i in 0..11 {
+        println!("{i}");
+        if let Some(solns) = solutions.get(&i) {
+            for soln in solns { 
+                println!("{:?}", soln);
+            }
+        }
+    }
 }
 
-fn check_square(num: i64) -> bool {
+fn square(num: i64) -> bool {
     let sqrt = (num as f64).sqrt();
     sqrt == sqrt.round()
 }
@@ -178,14 +205,6 @@ fn palindrome(num: i64) -> bool {
     let num_str = num.to_string();
     let reverse: String = num_str.chars().rev().collect();
     num_str == reverse 
-}
-
-fn one_more_than_palindrome(num: i64) -> bool {
-    palindrome(num - 1)
-}
-
-fn one_less_than_palindrome(num: i64) -> bool {
-    palindrome(num + 1)
 }
 
 fn prime_power_prime(num: i64) -> bool {
@@ -197,6 +216,86 @@ fn digit_sum_is_7(mut num: i64) -> bool {
     while num != 0 { digit_sum += num % 10; num /= 10; }
     digit_sum == 7
 }
+
+fn digit_product_is_1(mut num: i64) -> bool {
+    let mut digit_product = 1;
+    while num != 0 { digit_product *= num % 10; num /= 10; }
+    digit_product % 10 == 1
+}
+
+fn fibonacci(num: i64) -> bool {
+    FIBONACCI.binary_search(&num).is_ok()
+}
+
+#[macro_export]
+macro_rules! multiple {
+    ( $m:expr) => {
+        {
+            fn multiple(num: i64) -> bool {
+                num % $m == 0
+            } 
+            multiple
+        }
+    };
+}
+
+const FIBONACCI: [i64; 55] = [
+0,
+1,
+1,
+2,
+3,
+5,
+8,
+13,
+21,
+34,
+55,
+89,
+144,
+233,
+377,
+610,
+987,
+1597,
+2584,
+4181,
+6765,
+10946,
+17711,
+28657,
+46368,
+75025,
+121393,
+196418,
+317811,
+514229,
+832040,
+1346269,
+2178309,
+3524578,
+5702887,
+9227465,
+14930352,
+24157817,
+39088169,
+63245986,
+102334155,
+165580141,
+267914296,
+433494437,
+701408733,
+1134903170 ,
+1836311903 ,
+2971215073 ,
+4807526976 ,
+7778742049 ,
+12586269025 ,
+20365011074 ,
+32951280099 ,
+53316291173 ,
+86267571272 ,
+];
 
 const PRIME_POWER_PRIMES: [i64; 27984] = [ 4,
 8,
